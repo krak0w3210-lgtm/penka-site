@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="ru">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Кофейня Пенка</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Onest:wght@400;500;600&family=Unbounded:wght@400;500;600&display=swap">
+<style>
+  /* Layout: one espresso-coloured hero panel with a cup seen from above bleeding off its edge;
+     everything below is quiet, and each drink card repeats that top-down cup in miniature. */
+  :root {
+    --bg: #EDE1D2;
+    --surface: #F7EFE4;
+    --line: #D9C8B4;
+    --fg: #2F1E15;
+    --muted: #6B5444;
+    --accent: #8F5126;
+    --band: #3B2418;
+    --band-fg: #F5EADC;
+    --band-muted: #D8C4AE;
+    --btn: #3B2418;
+    --btn-fg: #F7EFE4;
+    --btn-hover: #6A3D22;
+    --cta: #E3B27E;
+    --cta-hover: #F0CB9F;
+    --cta-fg: #2F1E15;
+    --header: rgba(237, 225, 210, .86);
+    --shadow: rgba(59, 36, 24, .16);
+
+    /* Cup illustration: the same in both themes, it always sits on a brown or neutral ground */
+    --saucer: #5C3A27;
+    --saucer-edge: #6E4830;
+    --cup: #F3E8DA;
+    --cup-shade: #E2D2BE;
+    --crema: #A8693A;
+    --crema-deep: #8A5029;
+    --foam: #F5EADC;
+    --espresso: #4A2A18;
+    --caramel: #B5763F;
+    --milk-coffee: #C89A6B;
+    --cocoa: #6A4128;
+    --filter: #7A4420;
+
+    --display: "Unbounded", "Arial Black", system-ui, sans-serif;
+    --body: "Onest", "Segoe UI", system-ui, -apple-system, sans-serif;
+
+    --r-lg: 36px;
+    --r-md: 24px;
+    --ease: cubic-bezier(.2, .7, .2, 1);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #1C130D;
+      --surface: #2A1C14;
+      --line: #46322A;
+      --fg: #F1E5D6;
+      --muted: #BFA88F;
+      --accent: #DDA06A;
+      --band: #33201A;
+      --band-fg: #F5EADC;
+      --band-muted: #D0BBA4;
+      --btn: #E3B27E;
+      --btn-fg: #2A1C14;
+      --btn-hover: #F0CB9F;
+      --header: rgba(28, 19, 13, .86);
+      --shadow: rgba(0, 0, 0, .45);
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #1C130D;
+    --surface: #2A1C14;
+    --line: #46322A;
+    --fg: #F1E5D6;
+    --muted: #BFA88F;
+    --accent: #DDA06A;
+    --band: #33201A;
+    --band-fg: #F5EADC;
+    --band-muted: #D0BBA4;
+    --btn: #E3B27E;
+    --btn-fg: #2A1C14;
+    --btn-hover: #F0CB9F;
+    --header: rgba(28, 19, 13, .86);
+    --shadow: rgba(0, 0, 0, .45);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 1.0625rem/1.6 var(--body);
+    -webkit-font-smoothing: antialiased;
+  }
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0 0 auto;
+    height: env(safe-area-inset-top, 0px);
+    z-index: 10;
+    background: var(--bg);
+  }
+  h1, h2, h3, p, ul, blockquote, figure { margin: 0; padding: 0; }
+  h1, h2 { font-family: var(--display); font-weight: 500; line-height: 1.12; text-wrap: balance; }
+  h2 { font-size: clamp(1.6rem, 3.6vw, 2.5rem); }
+  a { color: inherit; }
+  :focus-visible { outline: 3px solid var(--accent); outline-offset: 3px; border-radius: 8px; }
+  section[id] { scroll-margin-top: 88px; }
+
+  .wrap {
+    width: 100%;
+    max-width: 1168px;
+    margin-inline: auto;
+    padding-left: max(16px, env(safe-area-inset-left, 0px));
+    padding-right: max(16px, env(safe-area-inset-right, 0px));
+  }
+  .section { padding-block: clamp(56px, 9vw, 104px); }
+
+  /* Шапка */
+  .site-header {
+    position: sticky;
+    top: env(safe-area-inset-top, 0px);
+    z-index: 5;
+    background: var(--header);
+    -webkit-backdrop-filter: blur(12px);
+    backdrop-filter: blur(12px);
+  }
+  .site-header .wrap {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    min-height: 72px;
+  }
+  .logo {
+    font: 600 1.25rem/1 var(--display);
+    text-decoration: none;
+    transition: color .25s var(--ease);
+  }
+  .logo:hover { color: var(--accent); }
+  .nav { display: flex; gap: clamp(14px, 3vw, 32px); list-style: none; }
+  .nav a {
+    position: relative;
+    display: inline-block;
+    padding-block: 6px;
+    font-weight: 500;
+    font-size: 1rem;
+    text-decoration: none;
+  }
+  .nav a::after {
+    content: "";
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    height: 2px;
+    border-radius: 2px;
+    background: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform .3s var(--ease);
+  }
+  .nav a:hover::after { transform: scaleX(1); }
+
+  /* Главный экран */
+  .hero-wrap { padding-top: 8px; }
+  .hero {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+    overflow: hidden;
+    border-radius: var(--r-lg);
+    background: var(--band);
+    color: var(--band-fg);
+  }
+  .hero-text {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: start;
+    gap: 20px;
+    min-width: 0;
+    padding: clamp(32px, 6.5vw, 80px);
+  }
+  .hero h1 { font-size: clamp(2rem, 5vw, 3.75rem); }
+  .hero p { max-width: 30ch; color: var(--band-muted); font-size: clamp(1.0625rem, 1.8vw, 1.25rem); }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 15px 26px;
+    border-radius: 999px;
+    border: 0;
+    background: var(--btn);
+    color: var(--btn-fg);
+    font: 600 1rem/1.2 var(--body);
+    text-decoration: none;
+    transition: background-color .25s var(--ease), transform .25s var(--ease), box-shadow .25s var(--ease);
+  }
+  .btn svg { width: 18px; height: 18px; transition: transform .25s var(--ease); }
+  .btn:hover { background: var(--btn-hover); transform: translateY(-2px); box-shadow: 0 10px 22px var(--shadow); }
+  .btn:active { transform: translateY(0); }
+  .btn-cta { background: var(--cta); color: var(--cta-fg); margin-top: 8px; }
+  .btn-cta:hover { background: var(--cta-hover); }
+  .btn-cta:hover svg { transform: translateY(3px); }
+
+  .hero-art { position: relative; min-width: 0; }
+  .hero-art svg {
+    position: absolute;
+    left: -4%;
+    top: 50%;
+    width: 560px;
+    height: 560px;
+    transform: translateY(-50%);
+  }
+  .cup-group {
+    transform-origin: 200px 200px;
+    transition: transform 1.2s var(--ease);
+  }
+  .hero:hover .cup-group { transform: rotate(16deg); }
+
+  /* Меню */
+  .section-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 24px;
+    margin-bottom: clamp(24px, 4vw, 40px);
+  }
+  .section-head p { color: var(--muted); }
+  .menu-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+    list-style: none;
+  }
+  .drink {
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-rows: auto auto 1fr;
+    gap: 2px 18px;
+    height: 100%;
+    padding: 24px;
+    border-radius: var(--r-md);
+    background: var(--surface);
+    transition: transform .3s var(--ease), box-shadow .3s var(--ease);
+  }
+  .drink:hover { transform: translateY(-6px); box-shadow: 0 18px 36px var(--shadow); }
+  .mini-cup {
+    grid-row: 1 / 3;
+    width: 64px;
+    height: 64px;
+    border-radius: 50%;
+    border: 6px solid var(--cup);
+    box-shadow: 0 0 0 1px var(--line);
+    background: radial-gradient(circle, var(--foam) 0 var(--f, 0%), var(--c) calc(var(--f, 0%) + 2%));
+    transition: transform .5s var(--ease);
+  }
+  .drink:hover .mini-cup { transform: rotate(-14deg) scale(1.08); }
+  .drink h3 { font: 600 1.1875rem/1.3 var(--body); }
+  .drink p { color: var(--muted); font-size: 1rem; line-height: 1.4; }
+  .drink-foot {
+    grid-column: 1 / -1;
+    align-self: end;
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid var(--line);
+    font-variant-numeric: tabular-nums;
+  }
+  .drink-foot span { color: var(--muted); font-size: .9375rem; }
+  .drink-foot strong { font: 500 1.125rem/1 var(--display); color: var(--accent); }
+
+  /* О нас */
+  .about {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 20px 48px;
+    padding-top: clamp(40px, 6vw, 64px);
+    border-top: 1px solid var(--line);
+  }
+  .about p { max-width: 58ch; font-size: clamp(1.125rem, 2vw, 1.3125rem); line-height: 1.55; }
+
+  /* Отзывы */
+  .reviews {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 20px;
+  }
+  .review {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 20px;
+    padding: 28px 24px;
+    border-radius: var(--r-md);
+    border: 1px solid var(--line);
+    transition: transform .3s var(--ease), border-color .3s var(--ease);
+  }
+  .review:hover { transform: translateY(-4px); border-color: var(--accent); }
+  .review blockquote { font-size: 1.125rem; line-height: 1.5; }
+  .review figcaption { color: var(--muted); font-size: 1rem; font-weight: 500; }
+
+  /* Контакты */
+  .contacts {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr);
+    gap: 28px 48px;
+    padding: clamp(28px, 5.5vw, 64px);
+    border-radius: var(--r-lg);
+    background: var(--surface);
+  }
+  .contact-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px 32px; }
+  .contact-list h3 {
+    margin-bottom: 6px;
+    color: var(--muted);
+    font: 500 .875rem/1.3 var(--body);
+    letter-spacing: .04em;
+    text-transform: uppercase;
+  }
+  .hours { display: grid; grid-template-columns: auto 1fr; gap: 2px 14px; margin: 0; font-variant-numeric: tabular-nums; }
+  .hours dd { margin: 0; }
+  .phone-row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
+  .phone-number { font: 500 1.125rem/1.3 var(--display); font-variant-numeric: tabular-nums; }
+
+  .site-footer { padding-block: 8px 40px; color: var(--muted); font-size: .9375rem; }
+
+  @media (max-width: 960px) {
+    .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .reviews { grid-template-columns: minmax(0, 1fr); }
+    .about, .contacts { grid-template-columns: minmax(0, 1fr); }
+  }
+  @media (max-width: 720px) {
+    .hero { grid-template-columns: minmax(0, 1fr); }
+    .hero-text { padding-bottom: 8px; }
+    .hero-art { height: 230px; }
+    .hero-art svg {
+      left: 50%;
+      top: 8px;
+      width: 400px;
+      height: 400px;
+      transform: translateX(-50%);
+    }
+  }
+  @media (max-width: 620px) {
+    :root { --r-lg: 28px; --r-md: 20px; }
+    .menu-grid, .contact-list { grid-template-columns: minmax(0, 1fr); }
+    .drink { grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: auto auto 1fr; gap: 10px 14px; align-items: center; }
+    .mini-cup { grid-row: 1; width: 44px; height: 44px; border-width: 4px; }
+    .drink p { grid-column: 1 / -1; font-size: .9375rem; }
+    .drink-foot { margin-top: 6px; }
+    .btn { padding: 15px 24px; }
+    .phone-row .btn { width: 100%; justify-content: center; }
+  }
+  @media (max-width: 380px) {
+    .logo { font-size: 1.0625rem; }
+    .nav { gap: 12px; }
+    .nav a { font-size: .9375rem; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { transition-duration: .01ms !important; }
+    .hero:hover .cup-group, .drink:hover, .review:hover, .btn:hover,
+    .drink:hover .mini-cup { transform: none; }
+  }
+</style>
+
+<header class="site-header">
+  <div class="wrap">
+    <a class="logo" href="#top">Пенка</a>
+    <nav aria-label="Основное меню">
+      <ul class="nav">
+        <li><a href="#menu">Меню</a></li>
+        <li><a href="#about">О нас</a></li>
+        <li><a href="#contacts">Контакты</a></li>
+      </ul>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero-wrap">
+    <section class="hero" aria-labelledby="hero-title">
+      <div class="hero-text">
+        <h1 id="hero-title">Кофе, за которым хочется вернуться</h1>
+        <p>Сами обжариваем зерно и варим без спешки.</p>
+        <a class="btn btn-cta" href="#menu">
+          Посмотреть меню
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 4v16M5 13l7 7 7-7"/></svg>
+        </a>
+      </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 400 400" role="presentation">
+          <defs>
+            <path id="heart" d="M0 62C-68 14-82-44-38-58-17-65 0-50 0-34 0-50 17-65 38-58 82-44 68 14 0 62Z"/>
+            <radialGradient id="coffee" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stop-color="var(--crema)"/>
+              <stop offset="82%" stop-color="var(--crema)"/>
+              <stop offset="100%" stop-color="var(--crema-deep)"/>
+            </radialGradient>
+          </defs>
+          <g class="cup-group">
+            <circle cx="200" cy="200" r="194" fill="var(--saucer)"/>
+            <circle cx="200" cy="200" r="150" fill="none" stroke="var(--saucer-edge)" stroke-width="3"/>
+            <rect x="322" y="182" width="66" height="36" rx="18" fill="var(--cup-shade)"/>
+            <circle cx="200" cy="200" r="138" fill="var(--cup)"/>
+            <circle cx="200" cy="200" r="122" fill="url(#coffee)"/>
+            <g transform="translate(200 206)">
+              <use href="#heart" transform="scale(1.34)" fill="var(--foam)"/>
+              <use href="#heart" transform="translate(0 -4) scale(1.02)" fill="var(--crema)"/>
+              <use href="#heart" transform="translate(0 -8) scale(.76)" fill="var(--foam)"/>
+              <use href="#heart" transform="translate(0 -12) scale(.44)" fill="var(--crema)"/>
+            </g>
+          </g>
+        </svg>
+      </div>
+    </section>
+  </div>
+
+  <section class="section" id="menu" aria-labelledby="menu-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="menu-title">Меню</h2>
+        <p>Молоко можно заменить на овсяное или миндальное</p>
+      </div>
+      <ul class="menu-grid">
+        <li>
+          <article class="drink">
+            <div class="mini-cup" style="--c: var(--espresso)"></div>
+            <h3>Эспрессо</h3>
+            <p>Плотный, с нотами какао</p>
+            <div class="drink-foot"><span>30 мл</span><strong>170 ₽</strong></div>
+          </article>
+        </li>
+        <li>
+          <article class="drink">
+            <div class="mini-cup" style="--c: var(--crema); --f: 40%"></div>
+            <h3>Капучино</h3>
+            <p>Эспрессо и шелковистая пенка</p>
+            <div class="drink-foot"><span>250 мл</span><strong>260 ₽</strong></div>
+          </article>
+        </li>
+        <li>
+          <article class="drink">
+            <div class="mini-cup" style="--c: var(--crema-deep); --f: 18%"></div>
+            <h3>Флэт уайт</h3>
+            <p>Двойной эспрессо, меньше молока</p>
+            <div class="drink-foot"><span>200 мл</span><strong>290 ₽</strong></div>
+          </article>
+        </li>
+        <li>
+          <article class="drink">
+            <div class="mini-cup" style="--c: var(--milk-coffee); --f: 52%"></div>
+            <h3>Раф с корицей</h3>
+            <p>Сливки, ваниль и щепотка корицы</p>
+            <div class="drink-foot"><span>300 мл</span><strong>340 ₽</strong></div>
+          </article>
+        </li>
+        <li>
+          <article class="drink">
+            <div class="mini-cup" style="--c: var(--filter)"></div>
+            <h3>Фильтр-кофе</h3>
+            <p>Светлая обжарка, ягодная кислинка</p>
+            <div class="drink-foot"><span>300 мл</span><strong>230 ₽</strong></div>
+          </article>
+        </li>
+        <li>
+          <article class="drink">
+            <div class="mini-cup" style="--c: var(--cocoa); --f: 24%"></div>
+            <h3>Какао на овсяном</h3>
+            <p>Тёплое, густое, без кофеина</p>
+            <div class="drink-foot"><span>300 мл</span><strong>280 ₽</strong></div>
+          </article>
+        </li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="about" aria-labelledby="about-title">
+    <div class="wrap">
+      <div class="about">
+        <h2 id="about-title">О нас</h2>
+        <p>«Пенка» похожа на кухню у друзей: мягкий свет, деревянные столы и запах свежей обжарки. Здесь можно спокойно поработать за ноутбуком или просидеть час с книгой. Бариста помнит, какой кофе вы любите, и никто не поторопит вас освободить столик.</p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="reviews" aria-labelledby="reviews-title">
+    <div class="wrap">
+      <div class="section-head">
+        <h2 id="reviews-title">Отзывы</h2>
+        <p>Учебный проект: имена и отзывы вымышлены</p>
+      </div>
+      <div class="reviews">
+        <figure class="review">
+          <blockquote>Захожу перед работой за капучино и каждый раз задерживаюсь на лишние десять минут.</blockquote>
+          <figcaption>Марина К.</figcaption>
+        </figure>
+        <figure class="review">
+          <blockquote>Лучший раф в районе. Корицы ровно столько, сколько нужно.</blockquote>
+          <figcaption>Артём Л.</figcaption>
+        </figure>
+        <figure class="review">
+          <blockquote>Тихо, уютно, есть розетки у каждого стола. Писала здесь диплом.</blockquote>
+          <figcaption>Соня В.</figcaption>
+        </figure>
+      </div>
+    </div>
+  </section>
+
+  <section id="contacts" aria-labelledby="contacts-title">
+    <div class="wrap">
+      <div class="contacts">
+        <h2 id="contacts-title">Контакты</h2>
+        <div class="contact-list">
+          <div>
+            <h3>Адрес</h3>
+            <p>Москва, Кофейный переулок, 7</p>
+          </div>
+          <div>
+            <h3>Часы работы</h3>
+            <dl class="hours">
+              <dt>Пн–Пт</dt><dd>7:30–21:00</dd>
+              <dt>Сб–Вс</dt><dd>9:00–22:00</dd>
+            </dl>
+          </div>
+          <div class="phone-row">
+            <a class="btn" href="tel:+70001234567">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 16.5v3a2 2 0 0 1-2.2 2A18.5 18.5 0 0 1 2.5 5.2 2 2 0 0 1 4.5 3h3a2 2 0 0 1 2 1.7l.5 2.6a2 2 0 0 1-.6 1.8L8.100 10.400a15 15 0 0 0 5.500 5.500l1.300-1.300a2 2 0 0 1 1.800-.6l2.600.5a2 2 0 0 1 1.700 2Z"/></svg>
+              Позвонить
+            </a>
+            <span class="phone-number">+7 (000) 123-45-67</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap section">
+    <p>© 2026 Кофейня «Пенка». Учебный проект: кофейня, адрес и телефон вымышлены.</p>
+  </div>
+</footer>
