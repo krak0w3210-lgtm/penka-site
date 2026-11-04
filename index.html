@@ -29,6 +29,7 @@
     --cta-fg: #2F1E15;
     --header: rgba(237, 225, 210, .86);
     --shadow: rgba(59, 36, 24, .16);
+    --overlay: rgba(28, 16, 10, .55);
 
     /* Cup illustration: the same in both themes, it always sits on a brown or neutral ground */
     --saucer: #5C3A27;
@@ -38,11 +39,6 @@
     --crema: #A8693A;
     --crema-deep: #8A5029;
     --foam: #F5EADC;
-    --espresso: #4A2A18;
-    --caramel: #B5763F;
-    --milk-coffee: #C89A6B;
-    --cocoa: #6A4128;
-    --filter: #7A4420;
 
     --display: "Unbounded", "Arial Black", system-ui, sans-serif;
     --body: "Onest", "Segoe UI", system-ui, -apple-system, sans-serif;
@@ -89,6 +85,7 @@
   }
 
   * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
   html { scroll-behavior: smooth; }
   body {
     margin: 0;
@@ -230,54 +227,202 @@
     align-items: baseline;
     justify-content: space-between;
     gap: 8px 24px;
-    margin-bottom: clamp(24px, 4vw, 40px);
+    margin-bottom: 20px;
   }
   .section-head p { color: var(--muted); }
+  .tabs { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .tab {
+    padding: 9px 20px;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--fg);
+    font: 500 1rem/1.2 var(--body);
+    cursor: pointer;
+    transition: background-color .25s var(--ease), color .25s var(--ease), border-color .25s var(--ease);
+  }
+  .tab:hover { border-color: var(--accent); }
+  .tab[aria-pressed="true"] { background: var(--btn); border-color: var(--btn); color: var(--btn-fg); }
   .menu-grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 20px;
     list-style: none;
   }
-  .drink {
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    grid-template-rows: auto auto 1fr;
-    gap: 2px 18px;
+  .item {
+    display: flex;
+    flex-direction: column;
     height: 100%;
-    padding: 24px;
+    overflow: hidden;
     border-radius: var(--r-md);
     background: var(--surface);
     transition: transform .3s var(--ease), box-shadow .3s var(--ease);
   }
-  .drink:hover { transform: translateY(-6px); box-shadow: 0 18px 36px var(--shadow); }
-  .mini-cup {
-    grid-row: 1 / 3;
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    border: 6px solid var(--cup);
-    box-shadow: 0 0 0 1px var(--line);
-    background: radial-gradient(circle, var(--foam) 0 var(--f, 0%), var(--c) calc(var(--f, 0%) + 2%));
-    transition: transform .5s var(--ease);
+  .item:hover { transform: translateY(-6px); box-shadow: 0 18px 36px var(--shadow); }
+  .item-photo { aspect-ratio: 4 / 3; max-width: 100%; overflow: hidden; background: var(--line); }
+  .item-photo img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform .6s var(--ease);
   }
-  .drink:hover .mini-cup { transform: rotate(-14deg) scale(1.08); }
-  .drink h3 { font: 600 1.1875rem/1.3 var(--body); }
-  .drink p { color: var(--muted); font-size: 1rem; line-height: 1.4; }
-  .drink-foot {
-    grid-column: 1 / -1;
-    align-self: end;
+  .item:hover .item-photo img { transform: scale(1.05); }
+  .item-body { display: flex; flex: 1; flex-direction: column; gap: 2px; padding: 18px 20px 20px; }
+  .item h3 { font: 600 1.1875rem/1.3 var(--body); }
+  .item p { color: var(--muted); font-size: 1rem; line-height: 1.4; }
+  .item-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 16px;
+    font-variant-numeric: tabular-nums;
+  }
+  .item-price { display: grid; gap: 4px; white-space: nowrap; }
+  .item-price strong { font: 500 1.125rem/1 var(--display); color: var(--accent); }
+  .item-price span { color: var(--muted); font-size: .9375rem; line-height: 1; }
+  .add {
+    padding: 11px 18px;
+    border: 0;
+    border-radius: 999px;
+    background: var(--btn);
+    color: var(--btn-fg);
+    font: 600 .9375rem/1.2 var(--body);
+    cursor: pointer;
+    transition: background-color .25s var(--ease), transform .25s var(--ease);
+  }
+  .add:hover { background: var(--btn-hover); transform: translateY(-2px); }
+  .stepper { display: inline-flex; align-items: center; border-radius: 999px; background: var(--bg); }
+  .stepper button {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--fg);
+    font: 500 1.25rem/1 var(--body);
+    cursor: pointer;
+    transition: background-color .2s var(--ease);
+  }
+  .stepper button:hover { background: var(--line); }
+  .stepper output { min-width: 24px; text-align: center; font-weight: 600; font-variant-numeric: tabular-nums; }
+
+  /* Корзина */
+  .header-end { display: flex; align-items: center; gap: clamp(12px, 3vw, 32px); }
+  .cart-btn {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex: none;
+    border: 0;
+    border-radius: 50%;
+    background: var(--btn);
+    color: var(--btn-fg);
+    cursor: pointer;
+    transition: background-color .25s var(--ease), transform .25s var(--ease);
+  }
+  .cart-btn:hover { background: var(--btn-hover); transform: translateY(-2px); }
+  .cart-btn svg { width: 22px; height: 22px; }
+  .badge {
+    position: absolute;
+    top: -4px;
+    right: -6px;
+    min-width: 22px;
+    padding: 3px 6px;
+    border-radius: 999px;
+    background: var(--cta);
+    color: var(--cta-fg);
+    font: 600 .8125rem/1.2 var(--body);
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+  .cart {
+    width: min(460px, 100%);
+    max-width: 100%;
+    height: 100dvh;
+    max-height: 100dvh;
+    margin: 0 0 0 auto;
+    padding: 0;
+    border: 0;
+    border-radius: var(--r-lg) 0 0 var(--r-lg);
+    background: var(--surface);
+    color: var(--fg);
+  }
+  .cart[open] { animation: cart-in .35s var(--ease); }
+  .cart::backdrop { background: var(--overlay); }
+  @keyframes cart-in { from { transform: translateX(40px); opacity: 0; } }
+  .cart-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 100%;
+    padding-block: calc(20px + env(safe-area-inset-top, 0px)) calc(20px + env(safe-area-inset-bottom, 0px));
+    padding-left: max(20px, env(safe-area-inset-left, 0px));
+    padding-right: max(20px, env(safe-area-inset-right, 0px));
+  }
+  .cart-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+  .cart-head h2 { font-size: 1.5rem; }
+  .cart-close {
+    width: 40px;
+    height: 40px;
+    border: 0;
+    border-radius: 50%;
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 1.5rem/1 var(--body);
+    cursor: pointer;
+    transition: background-color .2s var(--ease);
+  }
+  .cart-close:hover { background: var(--line); }
+  .cart-state { display: flex; flex: 1; flex-direction: column; gap: 20px; }
+  .cart-message { display: grid; justify-items: start; align-content: center; gap: 14px; flex: 1; }
+  .cart-message h3 { font: 500 1.25rem/1.25 var(--display); }
+  .cart-message p { color: var(--muted); }
+  .cart-list { display: grid; gap: 16px; list-style: none; }
+  .cart-row { display: grid; grid-template-columns: 64px minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; }
+  .cart-row img { grid-row: 1 / 3; width: 64px; height: 64px; border-radius: 14px; object-fit: cover; }
+  .cart-row .name { font-weight: 600; line-height: 1.3; }
+  .cart-row .sum { font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .cart-row .stepper { justify-self: start; }
+  .cart-row .stepper button { width: 34px; height: 34px; font-size: 1.125rem; }
+  .remove {
+    padding: 4px;
+    border: 0;
+    background: none;
+    color: var(--muted);
+    font: 400 .9375rem/1.2 var(--body);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+    transition: color .2s var(--ease);
+  }
+  .remove:hover { color: var(--accent); }
+  .order { display: grid; gap: 14px; margin-top: auto; padding-top: 18px; border-top: 1px solid var(--line); }
+  .field { display: grid; gap: 6px; font-weight: 500; font-size: 1rem; }
+  .field input, .field select {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    background: var(--bg);
+    color: var(--fg);
+    font: 400 1rem/1.3 var(--body);
+  }
+  .total {
     display: flex;
     align-items: baseline;
     justify-content: space-between;
     gap: 12px;
-    margin-top: 18px;
-    padding-top: 14px;
-    border-top: 1px solid var(--line);
+    font-weight: 600;
     font-variant-numeric: tabular-nums;
   }
-  .drink-foot span { color: var(--muted); font-size: .9375rem; }
-  .drink-foot strong { font: 500 1.125rem/1 var(--display); color: var(--accent); }
+  .total strong { font: 500 1.375rem/1 var(--display); color: var(--accent); }
+  .order .btn { justify-content: center; cursor: pointer; }
+  .order small { color: var(--muted); font-size: .875rem; line-height: 1.4; }
 
   /* О нас */
   .about {
@@ -331,7 +476,10 @@
   .phone-row { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; }
   .phone-number { font: 500 1.125rem/1.3 var(--display); font-variant-numeric: tabular-nums; }
 
-  .site-footer { padding-block: 8px 40px; color: var(--muted); font-size: .9375rem; }
+  .site-footer { padding-block: 40px; color: var(--muted); font-size: .9375rem; }
+  .site-footer .wrap { display: grid; gap: 12px; }
+  .site-footer summary { cursor: pointer; }
+  .site-footer details ul { margin-top: 10px; padding-left: 18px; line-height: 1.5; }
 
   @media (max-width: 960px) {
     .menu-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
@@ -353,10 +501,9 @@
   @media (max-width: 620px) {
     :root { --r-lg: 28px; --r-md: 20px; }
     .menu-grid, .contact-list { grid-template-columns: minmax(0, 1fr); }
-    .drink { grid-template-columns: 44px minmax(0, 1fr); grid-template-rows: auto auto 1fr; gap: 10px 14px; align-items: center; }
-    .mini-cup { grid-row: 1; width: 44px; height: 44px; border-width: 4px; }
-    .drink p { grid-column: 1 / -1; font-size: .9375rem; }
-    .drink-foot { margin-top: 6px; }
+    .item-photo { aspect-ratio: 16 / 9; }
+    .item p { font-size: .9375rem; }
+    .cart { border-radius: 0; }
     .btn { padding: 15px 24px; }
     .phone-row .btn { width: 100%; justify-content: center; }
   }
@@ -364,25 +511,33 @@
     .logo { font-size: 1.0625rem; }
     .nav { gap: 12px; }
     .nav a { font-size: .9375rem; }
+    .site-header .wrap { gap: 8px; }
   }
   @media (prefers-reduced-motion: reduce) {
     html { scroll-behavior: auto; }
     *, *::before, *::after { transition-duration: .01ms !important; }
-    .hero:hover .cup-group, .drink:hover, .review:hover, .btn:hover,
-    .drink:hover .mini-cup { transform: none; }
+    .hero:hover .cup-group, .item:hover, .review:hover, .btn:hover, .add:hover,
+    .cart-btn:hover, .item:hover .item-photo img { transform: none; }
+    .cart[open] { animation: none; }
   }
 </style>
 
 <header class="site-header">
   <div class="wrap">
     <a class="logo" href="#top">Пенка</a>
-    <nav aria-label="Основное меню">
-      <ul class="nav">
-        <li><a href="#menu">Меню</a></li>
-        <li><a href="#about">О нас</a></li>
-        <li><a href="#contacts">Контакты</a></li>
-      </ul>
-    </nav>
+    <div class="header-end">
+      <nav aria-label="Основное меню">
+        <ul class="nav">
+          <li><a href="#menu">Меню</a></li>
+          <li><a href="#about">О нас</a></li>
+          <li><a href="#contacts">Контакты</a></li>
+        </ul>
+      </nav>
+      <button class="cart-btn" id="cart-open" type="button" aria-label="Открыть корзину">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l1 12H5L6 8Z"/><path d="M9 11V7a3 3 0 0 1 6 0v4"/></svg>
+        <span class="badge" id="cart-count" hidden>0</span>
+      </button>
+    </div>
   </div>
 </header>
 
@@ -431,56 +586,12 @@
         <h2 id="menu-title">Меню</h2>
         <p>Молоко можно заменить на овсяное или миндальное</p>
       </div>
-      <ul class="menu-grid">
-        <li>
-          <article class="drink">
-            <div class="mini-cup" style="--c: var(--espresso)"></div>
-            <h3>Эспрессо</h3>
-            <p>Плотный, с нотами какао</p>
-            <div class="drink-foot"><span>30 мл</span><strong>170 ₽</strong></div>
-          </article>
-        </li>
-        <li>
-          <article class="drink">
-            <div class="mini-cup" style="--c: var(--crema); --f: 40%"></div>
-            <h3>Капучино</h3>
-            <p>Эспрессо и шелковистая пенка</p>
-            <div class="drink-foot"><span>250 мл</span><strong>260 ₽</strong></div>
-          </article>
-        </li>
-        <li>
-          <article class="drink">
-            <div class="mini-cup" style="--c: var(--crema-deep); --f: 18%"></div>
-            <h3>Флэт уайт</h3>
-            <p>Двойной эспрессо, меньше молока</p>
-            <div class="drink-foot"><span>200 мл</span><strong>290 ₽</strong></div>
-          </article>
-        </li>
-        <li>
-          <article class="drink">
-            <div class="mini-cup" style="--c: var(--milk-coffee); --f: 52%"></div>
-            <h3>Раф с корицей</h3>
-            <p>Сливки, ваниль и щепотка корицы</p>
-            <div class="drink-foot"><span>300 мл</span><strong>340 ₽</strong></div>
-          </article>
-        </li>
-        <li>
-          <article class="drink">
-            <div class="mini-cup" style="--c: var(--filter)"></div>
-            <h3>Фильтр-кофе</h3>
-            <p>Светлая обжарка, ягодная кислинка</p>
-            <div class="drink-foot"><span>300 мл</span><strong>230 ₽</strong></div>
-          </article>
-        </li>
-        <li>
-          <article class="drink">
-            <div class="mini-cup" style="--c: var(--cocoa); --f: 24%"></div>
-            <h3>Какао на овсяном</h3>
-            <p>Тёплое, густое, без кофеина</p>
-            <div class="drink-foot"><span>300 мл</span><strong>280 ₽</strong></div>
-          </article>
-        </li>
-      </ul>
+      <div class="tabs" role="group" aria-label="Раздел меню">
+        <button class="tab" type="button" data-filter="all" aria-pressed="true">Всё</button>
+        <button class="tab" type="button" data-filter="drink" aria-pressed="false">Напитки</button>
+        <button class="tab" type="button" data-filter="food" aria-pressed="false">Еда</button>
+      </div>
+      <ul class="menu-grid" id="menu-grid"></ul>
     </div>
   </section>
 
@@ -546,7 +657,243 @@
 </main>
 
 <footer class="site-footer">
-  <div class="wrap section">
-    <p>© 2026 Кофейня «Пенка». Учебный проект: кофейня, адрес и телефон вымышлены.</p>
+  <div class="wrap">
+    <p>© 2026 Кофейня «Пенка». Учебный проект: кофейня, адрес и телефон вымышлены, заказы никуда не отправляются.</p>
+    <details>
+      <summary>Авторы фотографий</summary>
+      <ul>
+        <li>Эспрессо: <a href="https://commons.wikimedia.org/wiki/File:Espresso_Coffee_01.jpg" target="_blank" rel="noopener">Jubair1985</a>, CC0</li>
+        <li>Капучино: <a href="https://commons.wikimedia.org/wiki/File:Flat_white_coffee_Highgate_Cricket_Club,_Crouch_End,_London_01.jpg" target="_blank" rel="noopener">Acabashi</a>, CC BY-SA 4.0</li>
+        <li>Флэт уайт: <a href="https://commons.wikimedia.org/wiki/File:Flat_white_coffee_at_Highdown_Gardens,_Worthing,_West_Sussex,_England.jpg" target="_blank" rel="noopener">Acabashi</a>, CC BY-SA 4.0</li>
+        <li>Раф с корицей: <a href="https://commons.wikimedia.org/wiki/File:2014-06-30_Dr_Durham_special_latte_at_Cocoa_Cinnamon.jpg" target="_blank" rel="noopener">Ildar Sagdejev</a>, CC BY-SA 3.0</li>
+        <li>Фильтр-кофе: <a href="https://commons.wikimedia.org/wiki/File:Caf%C3%A9_coado.jpg" target="_blank" rel="noopener">Melsj</a>, CC BY-SA 4.0</li>
+        <li>Какао на овсяном: <a href="https://commons.wikimedia.org/wiki/File:Dark_Hot_Chocolate,_San_Churro_Leederville,_2026_(02).jpg" target="_blank" rel="noopener">Bahnfrend</a>, CC BY-SA 4.0</li>
+        <li>Круассан: <a href="https://commons.wikimedia.org/wiki/File:Almond_Croissant_-_Caff%C3%A8_Nero_2026-05-28.jpg" target="_blank" rel="noopener">Andy Li</a>, CC0</li>
+        <li>Миндальный круассан: <a href="https://commons.wikimedia.org/wiki/File:Almond_croissant_-_Bread_%26_Milk_2024-06-27.jpg" target="_blank" rel="noopener">Andy Li</a>, CC0</li>
+        <li>Булочка с корицей: <a href="https://commons.wikimedia.org/wiki/File:Rollo_de_canela_(Cinnamon_roll).jpg" target="_blank" rel="noopener">Horacio Cambeiro</a>, CC BY-SA 3.0</li>
+        <li>Сэндвич с курицей: <a href="https://commons.wikimedia.org/wiki/File:Chicken_sandwich.jpg" target="_blank" rel="noopener">Tmannya</a>, CC BY-SA 3.0</li>
+        <li>Тост с ветчиной и сыром: <a href="https://commons.wikimedia.org/wiki/File:Ham_%26_cheese_toasted_sandwich_-_Potatoast_2026-05-02.jpg" target="_blank" rel="noopener">Andy Li</a>, CC0</li>
+        <li>Чизкейк: <a href="https://commons.wikimedia.org/wiki/File:Mondays_at_Il_Forno_-_Cheesecake_with_strawberry_sauce.jpg" target="_blank" rel="noopener">Alex Dugger</a>, CC BY 2.0</li>
+      </ul>
+      <p>Фото с Wikimedia Commons, кадрированы. Снимки взяты для иллюстрации и не показывают блюда этой кофейни.</p>
+    </details>
   </div>
 </footer>
+
+<dialog class="cart" id="cart" aria-labelledby="cart-title">
+  <div class="cart-inner">
+    <div class="cart-head">
+      <h2 id="cart-title">Корзина</h2>
+      <button class="cart-close" id="cart-close" type="button" aria-label="Закрыть корзину">×</button>
+    </div>
+
+    <div class="cart-state" id="cart-empty">
+      <div class="cart-message">
+        <h3>Пока пусто</h3>
+        <p>Добавьте напиток или выпечку из меню.</p>
+        <button class="btn" id="cart-to-menu" type="button">Перейти к меню</button>
+      </div>
+    </div>
+
+    <div class="cart-state" id="cart-filled" hidden>
+      <ul class="cart-list" id="cart-list"></ul>
+      <form class="order" id="order-form">
+        <label class="field" for="order-name">Имя для заказа
+          <input id="order-name" name="name" type="text" autocomplete="off" maxlength="40" required>
+        </label>
+        <label class="field" for="order-time">Когда заберёте
+          <select id="order-time" name="time">
+            <option>Через 15 минут</option>
+            <option>Через 30 минут</option>
+            <option>Через час</option>
+          </select>
+        </label>
+        <div class="total"><span>Итого</span><strong id="cart-total">0 ₽</strong></div>
+        <button class="btn" type="submit">Оформить заказ</button>
+        <small>Учебный проект: оплаты нет, заказ никуда не отправится.</small>
+      </form>
+    </div>
+
+    <div class="cart-state" id="cart-done" hidden>
+      <div class="cart-message">
+        <h3 id="done-title"></h3>
+        <p id="done-text"></p>
+        <p>Это учебный проект: заказ никуда не отправлен, платить ничего не нужно.</p>
+        <button class="btn" id="cart-done-close" type="button">Вернуться к меню</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const MENU = [
+    { id: 'espresso', cat: 'drink', name: 'Эспрессо', desc: 'Плотный, с нотами какао', size: '30 мл', price: 170, img: 'espresso' },
+    { id: 'cappuccino', cat: 'drink', name: 'Капучино', desc: 'Эспрессо и шелковистая пенка', size: '250 мл', price: 260, img: 'cappuccino' },
+    { id: 'flat-white', cat: 'drink', name: 'Флэт уайт', desc: 'Двойной эспрессо, меньше молока', size: '200 мл', price: 290, img: 'flat-white' },
+    { id: 'raf', cat: 'drink', name: 'Раф с корицей', desc: 'Сливки, ваниль и щепотка корицы', size: '300 мл', price: 340, img: 'raf' },
+    { id: 'filter', cat: 'drink', name: 'Фильтр-кофе', desc: 'Светлая обжарка, ягодная кислинка', size: '300 мл', price: 230, img: 'filter' },
+    { id: 'cocoa', cat: 'drink', name: 'Какао на овсяном', desc: 'Тёплое, густое, без кофеина', size: '300 мл', price: 280, img: 'cocoa' },
+    { id: 'croissant', cat: 'food', name: 'Круассан', desc: 'Хрустящий, на сливочном масле', size: '80 г', price: 190, img: 'croissant' },
+    { id: 'almond-croissant', cat: 'food', name: 'Миндальный круассан', desc: 'С миндальным кремом и лепестками', size: '110 г', price: 270, img: 'almond-croissant' },
+    { id: 'cinnamon-roll', cat: 'food', name: 'Булочка с корицей', desc: 'Мягкая, с карамельной корицей', size: '120 г', price: 230, img: 'cinnamon-roll' },
+    { id: 'chicken-sandwich', cat: 'food', name: 'Сэндвич с курицей', desc: 'Курица, сыр и овощи на тостах', size: '220 г', price: 390, img: 'chicken-sandwich' },
+    { id: 'ham-toast', cat: 'food', name: 'Тост с ветчиной и сыром', desc: 'Горячий, с тянущимся сыром', size: '180 г', price: 340, img: 'ham-toast' },
+    { id: 'cheesecake', cat: 'food', name: 'Чизкейк', desc: 'Нежный, с клубничным соусом', size: '130 г', price: 320, img: 'cheesecake' },
+  ];
+  const STORE_KEY = 'penka-cart';
+  const byId = Object.fromEntries(MENU.map((item) => [item.id, item]));
+  const $ = (id) => document.getElementById(id);
+  const rub = (n) => n.toLocaleString('ru-RU') + ' ₽';
+  const photo = (item) => 'img/' + item.img + '.jpg';
+
+  function loadCart() {
+    try {
+      const saved = JSON.parse(localStorage.getItem(STORE_KEY)) || {};
+      return Object.fromEntries(Object.entries(saved).filter(([id, qty]) => byId[id] && Number.isInteger(qty) && qty > 0));
+    } catch { return {}; }
+  }
+  function saveCart() {
+    try { localStorage.setItem(STORE_KEY, JSON.stringify(cart)); } catch {}
+  }
+  let cart = loadCart();
+
+  /* Карточки меню */
+  const grid = $('menu-grid');
+  grid.innerHTML = MENU.map((item) => `
+    <li data-cat="${item.cat}">
+      <article class="item">
+        <div class="item-photo"><img src="${photo(item)}" alt="${item.name}" width="600" height="450" loading="lazy"></div>
+        <div class="item-body">
+          <h3>${item.name}</h3>
+          <p>${item.desc}</p>
+          <div class="item-foot">
+            <div class="item-price"><strong>${rub(item.price)}</strong><span>${item.size}</span></div>
+            <div data-id="${item.id}">
+              <button class="add" type="button" data-act="inc">В корзину</button>
+              <div class="stepper" hidden>
+                <button type="button" data-act="dec" aria-label="Убрать одну порцию: ${item.name}">−</button>
+                <output aria-live="polite">0</output>
+                <button type="button" data-act="inc" aria-label="Добавить ещё: ${item.name}">+</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </article>
+    </li>`).join('');
+
+  function change(id, delta) {
+    const qty = (cart[id] || 0) + delta;
+    if (qty > 0) cart[id] = Math.min(qty, 20); else delete cart[id];
+    saveCart();
+    render();
+  }
+
+  function render() {
+    const ids = Object.keys(cart);
+    const count = ids.reduce((sum, id) => sum + cart[id], 0);
+    const total = ids.reduce((sum, id) => sum + cart[id] * byId[id].price, 0);
+
+    grid.querySelectorAll('[data-id]').forEach((box) => {
+      const qty = cart[box.dataset.id] || 0;
+      box.querySelector('.add').hidden = qty > 0;
+      box.querySelector('.stepper').hidden = qty === 0;
+      box.querySelector('output').textContent = qty;
+    });
+
+    $('cart-count').hidden = count === 0;
+    $('cart-count').textContent = count;
+    $('cart-open').setAttribute('aria-label', count ? 'Открыть корзину, позиций: ' + count : 'Открыть корзину');
+
+    $('cart-total').textContent = rub(total);
+    $('cart-list').innerHTML = ids.map((id) => {
+      const item = byId[id];
+      return `<li class="cart-row" data-id="${id}">
+        <img src="${photo(item)}" alt="">
+        <span class="name">${item.name}</span>
+        <span class="sum">${rub(item.price * cart[id])}</span>
+        <div class="stepper">
+          <button type="button" data-act="dec" aria-label="Убрать одну порцию: ${item.name}">−</button>
+          <output>${cart[id]}</output>
+          <button type="button" data-act="inc" aria-label="Добавить ещё: ${item.name}">+</button>
+        </div>
+        <button class="remove" type="button" data-act="remove" aria-label="Удалить: ${item.name}">Удалить</button>
+      </li>`;
+    }).join('');
+
+    if ($('cart-done').hidden) {
+      $('cart-empty').hidden = count > 0;
+      $('cart-filled').hidden = count === 0;
+    }
+  }
+
+  /* Кнопки в карточках */
+  grid.addEventListener('click', (event) => {
+    const button = event.target.closest('[data-act]');
+    if (!button) return;
+    const box = button.closest('[data-id]');
+    change(box.dataset.id, button.dataset.act === 'inc' ? 1 : -1);
+    const stepperShown = !box.querySelector('.stepper').hidden;
+    if (button.hidden || button.closest('[hidden]')) {
+      (stepperShown ? box.querySelector('.stepper [data-act="inc"]') : box.querySelector('.add')).focus();
+    }
+  });
+
+  /* Кнопки в корзине: список перерисовывается, поэтому фокус возвращается вручную */
+  $('cart-list').addEventListener('click', (event) => {
+    const button = event.target.closest('[data-act]');
+    if (!button) return;
+    const { id } = button.closest('[data-id]').dataset;
+    const { act } = button.dataset;
+    if (act === 'remove') { delete cart[id]; saveCart(); render(); }
+    else change(id, act === 'inc' ? 1 : -1);
+    const same = $('cart-list').querySelector(`[data-id="${id}"] [data-act="${act}"]`);
+    (same || $('cart-close')).focus();
+  });
+
+  /* Открытие и закрытие */
+  const dialog = $('cart');
+  function resetDone() {
+    $('cart-done').hidden = true;
+    render();
+  }
+  $('cart-open').addEventListener('click', () => { resetDone(); dialog.showModal(); });
+  $('cart-close').addEventListener('click', () => dialog.close());
+  dialog.addEventListener('click', (event) => { if (event.target === dialog) dialog.close(); });
+  function backToMenu() {
+    dialog.close();
+    $('menu').scrollIntoView();
+  }
+  $('cart-to-menu').addEventListener('click', backToMenu);
+  $('cart-done-close').addEventListener('click', backToMenu);
+
+  /* Оформление: только на странице, никуда не отправляется */
+  $('order-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const name = $('order-name').value.trim();
+    if (!name) { $('order-name').focus(); return; }
+    const number = 100 + Math.floor(Math.random() * 900);
+    $('done-title').textContent = name + ', заказ №' + number + ' оформлен';
+    $('done-text').textContent = $('order-time').value + ' он ждал бы вас на стойке.';
+    cart = {};
+    saveCart();
+    event.target.reset();
+    $('cart-done').hidden = false;
+    $('cart-empty').hidden = true;
+    $('cart-filled').hidden = true;
+    render();
+    $('cart-done-close').focus();
+  });
+
+  /* Фильтр меню */
+  const tabs = document.querySelectorAll('.tab');
+  tabs.forEach((tab) => tab.addEventListener('click', () => {
+    tabs.forEach((other) => other.setAttribute('aria-pressed', String(other === tab)));
+    grid.querySelectorAll('li').forEach((li) => {
+      li.hidden = tab.dataset.filter !== 'all' && li.dataset.cat !== tab.dataset.filter;
+    });
+  }));
+
+  render();
+})();
+</script>
